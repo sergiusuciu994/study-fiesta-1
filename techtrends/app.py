@@ -1,13 +1,19 @@
 import sqlite3
+from sqlite3.dbapi2 import Connection
 
 from flask import Flask, jsonify, json, render_template, request, url_for, redirect, flash
 from werkzeug.exceptions import abort
 
+# We define a global variable to keep count of connections so far.
+connectionCount = 0
+
 # Function to get a database connection.
 # This function connects to database with the name `database.db`
 def get_db_connection():
+    global connectionCount
     connection = sqlite3.connect('database.db')
     connection.row_factory = sqlite3.Row
+    connectionCount += 1
     return connection
 
 # Function to get a post using its ID
@@ -21,6 +27,30 @@ def get_post(post_id):
 # Define the Flask application
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your secret key'
+
+# Route that shouws the application health
+@app.route('/healthz')
+def healthCheck():
+    return app.response_class(
+        response=json.dumps({"result": "OK - healthy"}),
+        status=200,
+        mimetype="application/json"
+    )
+
+@app.route('/metrics')
+def metrics():
+    global connectionCount
+    connection = get_db_connection()
+    postCount = connection.execute('SELECT COUNT(*) FROM posts').fetchone()
+    connection.close()
+    return app.response_class(
+        response=json.dumps({
+            "db_connection_count" : connectionCount,
+            "post_count" : postCount[0]
+        }),
+        status=200,
+        mimetype="application/json"
+    )
 
 # Define the main route of the web application 
 @app.route('/')
