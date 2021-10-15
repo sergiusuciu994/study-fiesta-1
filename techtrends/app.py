@@ -1,9 +1,22 @@
+import logging
+import sys
 import sqlite3
 from sqlite3.dbapi2 import Connection
 
 from flask import Flask, jsonify, json, render_template, request, url_for, redirect, flash
 from werkzeug.exceptions import abort
 
+
+from logging.config import dictConfig
+
+logFormat = '%(levelname)s:%(module)s:%(asctime)s,  %(message)s'
+logging.basicConfig(format=logFormat, datefmt="%M-%D-%Y %H:%M:%S", level=logging.DEBUG)
+logging.Formatter("%(asctime)s;%(levelname)s;%(message)s","%m-%d-%Y %H:%M:%S")
+logService = logging.getLogger()
+errStream = logging.StreamHandler(sys.stderr)
+outStream = logging.StreamHandler(sys.stdout)
+logService.addHandler(errStream)
+logService.addHandler(outStream)
 # We define a global variable to keep count of connections so far.
 connectionCount = 0
 
@@ -66,8 +79,10 @@ def index():
 def post(post_id):
     post = get_post(post_id)
     if post is None:
+      logging.info("Nonexistent post tried to be accessed | %s"%post_id)
       return render_template('404.html'), 404
     else:
+      logging.info('Article %s retrieved!'%post['title'])
       return render_template('post.html', post=post)
 
 # Define the About Us page
