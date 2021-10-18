@@ -1,6 +1,6 @@
 FROM python:2.7
 LABEL maintainer="Sergiu Suciu"
-COPY ./techtrends/* /app
+COPY ./techtrends /app
 WORKDIR /app
 RUN ls -ltr
 RUN pip install -r requirements.txt
