@@ -79,7 +79,7 @@ def index():
 def post(post_id):
     post = get_post(post_id)
     if post is None:
-      logging.info("Nonexistent post tried to be accessed | %s"%post_id)
+      logging.error("Nonexistent post tried to be accessed | %s"%post_id)
       return render_template('404.html'), 404
     else:
       logging.info('Article %s retrieved!'%post['title'])
@@ -88,12 +88,14 @@ def post(post_id):
 # Define the About Us page
 @app.route('/about')
 def about():
+    logging.info('About route was visited')
     return render_template('about.html')
 
 # Define the post creation functionality 
 @app.route('/create', methods=('GET', 'POST'))
 def create():
     if request.method == 'POST':
+        logging.info('Create route was visited')
         title = request.form['title']
         content = request.form['content']
 
